@@ -42,8 +42,7 @@ async function setPuppeteer()
     console.log("[?] Info: Started at: " + start_info);
     puppeteer.use(stealth());
     const browser = await puppeteer.launch({
-        headless: false,
-        slowMo: 250,
+        headless: true,
     });
     const page = (await browser.pages())[0];
     
