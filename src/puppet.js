@@ -16,7 +16,7 @@ const loadCookie = async (page) => {
         console.log("[+] Cookie logged successfully.");
       } catch (error) {
         console.error('[x] Error setting the cookies:', error);
-      }   
+      }
 }
 
 const getTicket = async (page) => {
@@ -24,6 +24,7 @@ const getTicket = async (page) => {
         console.log("[/] Getting ticket..");
         await page.click('.e1asqgj30');
         const buttonText = 'Buy ticket';
+        await page.waitForNavigation();
         const [buttonElement] = await page.$x(`//button[contains(text(), "${buttonText}")]`);
         await buttonElement.click();
         console.log("[+] Tickets Saved !");
@@ -43,6 +44,7 @@ async function setPuppeteer()
     puppeteer.use(stealth());
     const browser = await puppeteer.launch({
         headless: true,
+        slowMo: 250,
     });
     const page = (await browser.pages())[0];
     
