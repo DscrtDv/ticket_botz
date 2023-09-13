@@ -3,7 +3,7 @@ const mailer      = require('./src/mailer.js');
 const bodyParser  = require('body-parser');
 const myPuppet    = require('./src/puppet.js');
 const app         = express();
-const port        = 3000;
+const port        = process.env.PORT || 3000;
 
 app.post('/scout', async(req, res) => {
   
@@ -15,5 +15,5 @@ app.post('/scout', async(req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at ${port}`);
 });

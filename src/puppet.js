@@ -3,6 +3,7 @@ const stealth   = require('puppeteer-extra-plugin-stealth');
 const fs		= require('fs').promises;
 const mailer    = require('./mailer.js');
 const utils       = require('./utils.js');
+
 var isAvailable = false;
 
 const loadCookie = async (page) => {
