@@ -45,6 +45,7 @@ async function setPuppeteer()
     const browser = await puppeteer.launch({
         headless: true,
         slowMo: 250,
+        executablePath: "/usr/bin/chromium-browser"
     });
     const page = (await browser.pages())[0];
     
