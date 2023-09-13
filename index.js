@@ -14,6 +14,6 @@ app.post('/scout', async(req, res) => {
   })
 });
 
-app.listen(process.env.PORT , () => {
+app.listen(port, () => {
   console.log(`Server running at ${port}`);
 });
