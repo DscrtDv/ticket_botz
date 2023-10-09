@@ -27,4 +27,22 @@ function send_email(receiver)
     });
 }
 
-module.exports = {send_email};
+function send_info(receiver, n_run)
+{
+    const date = utils.get_date();
+    var mailOptions = {
+        from: 'ti.censier@gmail.com',
+        to: receiver,
+        subject: 'Bot at run: ' + n_run,
+        text: 'The Bot is still running. No ticket found so far.'
+    }
+    console.log("[/] Sending info email..");
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error)
+            console.log(error);
+        else
+            console.log('[+] Email sent: ' + info.response);
+    });
+}
+
+module.exports = {send_email, send_info};

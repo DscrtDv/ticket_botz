@@ -5,7 +5,12 @@ const mailer    = require('./mailer.js');
 const utils       = require('./utils.js');
 
 var isAvailable = false;
+var ticket      = false;
 var captcha     = false;
+var n_run       = 1;
+
+var proxy_arr   = ['--proxy-server=socks5://127.0.0.1:9050', '--proxy-server=socks5://127.0.0.1:9052', '--proxy-server=socks5://127.0.0.1:9053', '--proxy-server=socks5://127.0.0.1:9054', '--proxy-server=socks5://127.0.0.1:9055', '--proxy-server=socks5://127.0.0.1:9056', '--proxy-server=socks5://127.0.0.1:9057', '--proxy-server=socks5://127.0.0.1:9058'];
+var index = 0;
 
 const loadCookie = async (page) => {
     try {
@@ -28,12 +33,32 @@ const getTicket = async (page) => {
         const [buttonElement] = await page.$x(`//button[contains(text(), "${buttonText}")]`);
         await buttonElement.click();
         console.log("[+] Tickets Saved !");
+        ticket = true;
     } catch(err) {
         console.error("[x] Error while fetching the ticket: ", err);
+        ticket = false;
     }
 }
 
+function restartJob(browser){
 
+    browser.close();
+    if (captcha)
+        console.log("[?] Browser closed due to Human verification");
+    else
+        console.log("[?] Browser closed due to an error")
+    console.log("[?] Restarting using another proxy");
+    console.log("[?] Retrying..");
+    if (index == 7)
+        index = 0;
+    else
+        index++;
+    n_run++;
+    if (n_run % 20 == 0)
+        send_info('whatablueguy@gmail.com', n_run);
+    captcha = false;
+    setPuppeteer();
+}
 //<p class="title" id="rtitle" style="visibility: visible; display: block; color: rgb(251, 188, 5);">Human verification in process...</p>
 const checkForCaptcha = async (page) => {
     try {
@@ -48,18 +73,6 @@ const checkForCaptcha = async (page) => {
     }
 }
 
-function captchaTimeout(browser){
-    const time = 3*60*1000;
-    browser.close();
-    console.log("[?] Browser closed due to Human verification");
-    console.log("[?] Timer set to 3 minutes.");
-    setTimeout(function(){
-        console.log("[?] Retrying..");
-        captcha = false;
-        setPuppeteer();
-    }, time);
-}
-
 async function setPuppeteer()
 {
     const start_info = utils.get_date();
@@ -67,44 +80,62 @@ async function setPuppeteer()
     var end_info;
     var end_date;
 
+    proxy = proxy_arr[index];
+    console.log(`-----------| RUN: ${n_run} |-----------`);
     console.log("[?] Info: Started at: " + start_info);
+    console.log("[?] Proxy setup: " + proxy);
+
     puppeteer.use(stealth());
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: "new",
         slowMo: 50,
+        args: [proxy, '--window-size=1920,1080'],
     });
     const page = (await browser.pages())[0];
-    
-    await loadCookie(page);
-    await page.goto("https://www.ticketswap.com/event/live-from-earth-ade-2023/regular-tickets/6de1657f-d678-4e6c-b9f8-12a6ed522516/3058095");
-    while (!isAvailable)
-    {
-        var ticket_button = await page.$('.e1asqgj30');
-        if (ticket_button){
-            console.log("[+] Ticket found.");
-            isAvailable = true;
-            await getTicket(page);
-        }
-        else {  
-            await checkForCaptcha(page);
-            console.log("[?] Captcha: " + captcha);
-            if (captcha == true){
-                captchaTimeout(browser);
-                return ;
+    await page.setViewport({
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 1,
+    });
+    await page.setDefaultNavigationTimeout(60000);
+    try {
+        await page.goto("https://www.ticketswap.com/event/live-from-earth-ade-2023/regular-tickets/6de1657f-d678-4e6c-b9f8-12a6ed522516/3058095");
+        while (!isAvailable)
+        {
+            var ticket_button = await page.$('.e1asqgj30');
+            if (ticket_button){
+                console.log("[+] Ticket found.");
+                isAvailable = true;
+                await loadCookie(page);
+                await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+                await getTicket(page);
             }
-            console.log("[/] No ticket found, reloading...");
-            await page.waitForTimeout(30000);
-            await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+            else {  
+                await checkForCaptcha(page);
+                if (captcha == true){
+                    restartJob(browser);
+                    return ;
+                }
+                console.log("[/] No ticket found, reloading...");
+                await page.waitForTimeout(25000);
+                await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+            }
         }
+        if (ticket == true)
+        {
+            browser.close();
+            mailer.send_email('whatablueguy@gmail.com');
+            end_info = utils.get_date();
+            end_date = new Date();
+            var time_diff = utils.getTimeDifference(start_date, end_date);
+            console.log("[+] Job done finished at: " + end_info);
+            console.log("[?] Performed in: " + time_diff);
+        }
+    } catch (err) {
+        console.log("[x] Error: " + err);
+        if (!ticket)
+            restartJob(browser);
     }
-    browser.close();
-    mailer.send_email('whatablueguy@gmail.com');
-    //mailer.send_email('');
-    end_info = utils.get_date();
-    end_date = new Date();
-    var time_diff = utils.getTimeDifference(start_date, end_date);
-    console.log("[+] Job done finished at: " + end_info);
-    console.log("[?] Performed in: " + time_diff);
 }
 
 module.exports = {setPuppeteer};
