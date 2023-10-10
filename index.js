@@ -5,9 +5,14 @@ const myPuppet    = require('./src/puppet.js');
 const app         = express();
 const port        = process.env.PORT || 3000;
 
+app.use(bodyParser.json());
+
 app.post('/scout', async(req, res) => {
   
-  await myPuppet.setPuppeteer();
+  const body = await req.body;
+  var ticket = false;
+  while (!ticket)
+    ticket = await myPuppet.setPuppeteer(body);
   res.status(200).json({
     status: "Success",
     message: "Puppet launched."

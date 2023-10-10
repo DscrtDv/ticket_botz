@@ -3,14 +3,17 @@ const stealth   = require('puppeteer-extra-plugin-stealth');
 const fs		= require('fs').promises;
 const mailer    = require('./mailer.js');
 const utils       = require('./utils.js');
+const { toUSVString } = require('util');
 
 var isAvailable = false;
 var ticket      = false;
 var captcha     = false;
 var n_run       = 1;
+var g_url;
 
 var proxy_arr   = ['--proxy-server=socks5://127.0.0.1:9050', '--proxy-server=socks5://127.0.0.1:9052', '--proxy-server=socks5://127.0.0.1:9053', '--proxy-server=socks5://127.0.0.1:9054', '--proxy-server=socks5://127.0.0.1:9055', '--proxy-server=socks5://127.0.0.1:9056', '--proxy-server=socks5://127.0.0.1:9057', '--proxy-server=socks5://127.0.0.1:9058'];
 var index = 0;
+puppeteer.use(stealth());
 
 const loadCookie = async (page) => {
     try {
@@ -55,9 +58,8 @@ function restartJob(browser){
         index++;
     n_run++;
     if (n_run % 20 == 0)
-        send_info('whatablueguy@gmail.com', n_run);
+        mailer.send_info('whatablueguy@gmail.com', n_run);
     captcha = false;
-    setPuppeteer();
 }
 //<p class="title" id="rtitle" style="visibility: visible; display: block; color: rgb(251, 188, 5);">Human verification in process...</p>
 const checkForCaptcha = async (page) => {
@@ -73,10 +75,11 @@ const checkForCaptcha = async (page) => {
     }
 }
 
-async function setPuppeteer()
+async function setPuppeteer(body)
 {
-    const start_info = utils.get_date();
-    const start_date = new Date();
+    const start_info    = utils.get_date();
+    const start_date    = new Date();
+    if (n_run == 1) g_url = body.url;
     var end_info;
     var end_date;
 
@@ -85,7 +88,7 @@ async function setPuppeteer()
     console.log("[?] Info: Started at: " + start_info);
     console.log("[?] Proxy setup: " + proxy);
 
-    puppeteer.use(stealth());
+
     const browser = await puppeteer.launch({
         headless: "new",
         slowMo: 50,
@@ -99,7 +102,7 @@ async function setPuppeteer()
     });
     await page.setDefaultNavigationTimeout(60000);
     try {
-        await page.goto("https://www.ticketswap.com/event/live-from-earth-ade-2023/regular-tickets/6de1657f-d678-4e6c-b9f8-12a6ed522516/3058095");
+        await page.goto(g_url);
         while (!isAvailable)
         {
             var ticket_button = await page.$('.e1asqgj30');
@@ -110,11 +113,11 @@ async function setPuppeteer()
                 await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
                 await getTicket(page);
             }
-            else {  
+            else {  false
                 await checkForCaptcha(page);
                 if (captcha == true){
                     restartJob(browser);
-                    return ;
+                    return ticket;
                 }
                 console.log("[/] No ticket found, reloading...");
                 await page.waitForTimeout(25000);
@@ -130,15 +133,15 @@ async function setPuppeteer()
             var time_diff = utils.getTimeDifference(start_date, end_date);
             console.log("[+] Job done finished at: " + end_info);
             console.log("[?] Performed in: " + time_diff);
+            return ticket;
         }
     } catch (err) {
         console.log("[x] Error: " + err);
-        if (!ticket)
-            restartJob(browser);
+        return ticket;
     }
 }
 
 module.exports = {setPuppeteer};
 
 // actual link: https://www.ticketswap.com/event/live-from-earth-ade-2023/regular-tickets/6de1657f-d678-4e6c-b9f8-12a6ed522516/3058095
-// good test link: https://www.ticketswap.com/event/ares/1c80c5f7-c1f3-46a6-baba-d4bc99f4190e
+// early: https://www.ticketswap.com/event/live-from-earth-ade-2023/early-admission-enter-before-0000/6de1657f-d678-4e6c-b9f8-12a6ed522516/3058099
