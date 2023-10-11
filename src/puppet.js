@@ -10,9 +10,9 @@ var ticket      = false;
 var captcha     = false;
 var n_run       = 1;
 var g_url;
-
 var proxy_arr   = ['--proxy-server=socks5://127.0.0.1:9050', '--proxy-server=socks5://127.0.0.1:9052', '--proxy-server=socks5://127.0.0.1:9053', '--proxy-server=socks5://127.0.0.1:9054', '--proxy-server=socks5://127.0.0.1:9055', '--proxy-server=socks5://127.0.0.1:9056', '--proxy-server=socks5://127.0.0.1:9057', '--proxy-server=socks5://127.0.0.1:9058'];
-var index = 0;
+var index       = 0;
+const botId     = 0;
 puppeteer.use(stealth());
 
 const loadCookie = async (page) => {
@@ -84,7 +84,7 @@ async function setPuppeteer(body)
     var end_date;
 
     proxy = proxy_arr[index];
-    console.log(`-----------| RUN: ${n_run} |-----------`);
+    console.log(`-----------| RUN: ${n_run} BOT: ${botId} |-----------`);
     console.log("[?] Info: Started at: " + start_info);
     console.log("[?] Proxy setup: " + proxy);
 
