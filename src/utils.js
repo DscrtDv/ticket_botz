@@ -31,4 +31,9 @@ function getTimeDifference(startDate, endDate) {
     return formattedTime;
   }
 
-module.exports = {get_date, getTimeDifference};
+function getRandomTimeout() {
+    const randomTimeout = Math.floor(Math.random() * (16000 - 5000 + 1)) + 5000;
+    console.log("   [?] Timeout of: " + randomTimeout + " ms");
+    return randomTimeout;
+}
+module.exports = {get_date, getTimeDifference, getRandomTimeout};

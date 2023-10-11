@@ -120,7 +120,7 @@ async function setPuppeteer(body)
                     return ticket;
                 }
                 console.log("[/] No ticket found, reloading...");
-                await page.waitForTimeout(25000);
+                await page.waitForTimeout(utils.getRandomTimeout());
                 await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
             }
         }
