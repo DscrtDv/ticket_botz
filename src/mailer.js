@@ -27,13 +27,13 @@ function send_email(receiver)
     });
 }
 
-function send_info(receiver, n_run)
+function send_info(receiver, n_run, bot_id)
 {
     const date = utils.get_date();
     var mailOptions = {
         from: 'ti.censier@gmail.com',
         to: receiver,
-        subject: 'Bot at run: ' + n_run,
+        subject: 'Bot: ' + bot_id + ' at run: ' + n_run,
         text: 'The Bot is still running. No ticket found so far.'
     }
     console.log("[/] Sending info email..");

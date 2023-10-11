@@ -58,7 +58,7 @@ function restartJob(browser){
         index++;
     n_run++;
     if (n_run % 20 == 0)
-        mailer.send_info('whatablueguy@gmail.com', n_run);
+        mailer.send_info('whatablueguy@gmail.com', n_run, botId);
     captcha = false;
 }
 //<p class="title" id="rtitle" style="visibility: visible; display: block; color: rgb(251, 188, 5);">Human verification in process...</p>
