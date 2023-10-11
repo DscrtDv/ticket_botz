@@ -32,7 +32,7 @@ function getTimeDifference(startDate, endDate) {
   }
 
 function getRandomTimeout() {
-    const randomTimeout = Math.floor(Math.random() * (16000 - 5000 + 1)) + 5000;
+    const randomTimeout = Math.floor(Math.random() * (5000 - 2000 + 1)) + 5000;
     console.log("   [?] Timeout of: " + randomTimeout + " ms");
     return randomTimeout;
 }

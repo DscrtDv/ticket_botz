@@ -91,7 +91,7 @@ async function setPuppeteer(body)
 
     const browser = await puppeteer.launch({
         headless: "new",
-        slowMo: 50,
+        slowMo: 0,
         args: [proxy, '--window-size=1920,1080'],
     });
     const page = (await browser.pages())[0];
